@@ -30,13 +30,11 @@ def create_CA_tensor(rule_n: int, frame_n: int, W: int, H: int):
     return tensor
 
 
-def convert_tensor_color(ca_tensor, H, W):
+def convert_tensor_color(ca_tensor, W: int, H: int):
 
     def _transform(x: str, zellenfarbe, hintergrundfarbe):
         return zellenfarbe if x == "1" else hintergrundfarbe
 
-    # b_color = np.float32([0, 0, 0])   # black
-    # color = np.float32([50, 205, 50]) # limegreen
     b_color = [0, 0, 0]    # black
     color = [50, 205, 50]  # limegreen
 
@@ -52,7 +50,8 @@ def convert_tensor_color(ca_tensor, H, W):
     return list(map(lambda x: np.array(x, dtype=np.uint8).reshape(H, W, 3), tensor_color))
 
 
-def create_video(ca_tensor, FPS, seconds, W, H, rule_n) -> None:
+def create_video(ca_tensor, FPS: int, seconds: int, W: int, H: int,
+                 rule_n: int) -> None:
     fourcc = VideoWriter_fourcc(*'MP42')
     filename = './CA_video_rule_{}.avi'.format(rule_n)
     video = VideoWriter(filename, fourcc, float(FPS), (W, H))
@@ -63,7 +62,7 @@ def create_video(ca_tensor, FPS, seconds, W, H, rule_n) -> None:
 
 
 def main():
-    FPS, seconds = 10, 300
+    FPS, seconds = 15, 200
     FRAMES_n = FPS * seconds
 
     resolutions = {  # W x H
@@ -72,11 +71,11 @@ def main():
         "1080p" : (1920, 1080)
     }
     W, H = resolutions["720p"]
-    rule_n = 22  # 195  # range(256)
+    rule_n = 110  # range(256)
 
     ca_tensor = create_CA_tensor(rule_n, FRAMES_n, W, H)
     print("CA_Tensor: Completed")
-    ca_tensor_color = convert_tensor_color(ca_tensor, H, W)
+    ca_tensor_color = convert_tensor_color(ca_tensor, W, H)
     print("CA_Color_Tensor: Completed")
     create_video(ca_tensor_color, FPS, seconds, W, H, rule_n)
     print("\n\tVideo Completed!")
