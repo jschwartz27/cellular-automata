@@ -1,0 +1,6 @@
+name: cell_automata
+dependencies:
+  - pip=20.2.2
+  - pip:
+    - opencv-python
+    - numpy
