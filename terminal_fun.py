@@ -4,6 +4,13 @@ import time
 import random
 import argparse
 
+'''
+excellent rules to checkout are:
+    22
+    154
+    225
+'''
+
 
 def error_and_exit(msg: str) -> None:
     sys.stderr.write("\nError: {}\n".format(msg))
@@ -33,6 +40,7 @@ def arg_check() -> object:
     parser.add_argument("-v", "--symbol_value", required=False, type=str,
                         default="?",
                         help="Default symbol for the cellular automata?")
+
     # this will cause changes in rule every 100 or whatever iterations
     # parser.add_argument("--randomize", type=str2bool, nargs='?',
     #                     const=True, default=False,
@@ -41,9 +49,7 @@ def arg_check() -> object:
     # ap.add_argument("-c", "--class", required=False,
     #                help="A randomized selection from a give class (1-4)")
 
-    args = vars(parser.parse_args())
-
-    return args
+    return vars(parser.parse_args())
 
 
 class CellularAutomata:
@@ -51,6 +57,7 @@ class CellularAutomata:
     terminal_length = os.get_terminal_size().columns - 1
     # 111 110 101 100 011 010 001 000
     states = ['{0:03b}'.format(k) for k in range(8)][::-1]
+    sleep_time = 0.025
 
     def __init__(self, args):
         self.SYMBOL = args["symbol_value"]
@@ -66,40 +73,36 @@ class CellularAutomata:
     def conv_binary(self, x: str) -> str:
         return self.SYMBOL if x == "1" else " "
 
-    def create(self, rule, seed) -> None:
+    def create(self, rule: str, seed: bool) -> None:
         print("\nRule Number :: {}".format(rule))
         print("Binary      :: {}\n".format(self.n_binary))
+        time.sleep(1)
 
         if seed:
-            cell = [" "] * (self.terminal_length - 1) + [self.SYMBOL]
+            last_row = [" "] * (self.terminal_length - 1) + [self.SYMBOL]
         else:
-            cell = list(map(
+            last_row = list(map(
                 lambda x: random.choice([self.SYMBOL, " "]), range(self.terminal_length)))
 
-        it = [cell]
+        the_structure = [last_row]
         for _ in range(10000):
-            print("".join(cell))
-            time.sleep(.025)
-            next_row = list()
+            print("".join(last_row))
+            time.sleep(self.sleep_time)
             # because the index for loop can't wrap around
-            q = cell[-1:] + cell[:2]
+            q = last_row[-1:] + last_row[:2]
             q = "".join(list(map(lambda x: self.conv(x), q)))
-            k = self.conv_binary(self.transition_rules[q])
-            next_row.append(k)
+            next_row = [self.conv_binary(self.transition_rules[q])]
 
             for j in range(1, self.terminal_length-1):
-                q = cell[j-1:j+2]
-                q = "".join(list(map(lambda x: self.conv(x), q)))
-                k = self.conv_binary(self.transition_rules[q])
-                next_row.append(k)
-            # because the index for loop can't wrap around
-            q = cell[-2:] + cell[:1]
-            q = "".join(list(map(lambda x: self.conv(x), q)))
-            k = self.conv_binary(self.transition_rules[q])
-            next_row.append(k)
+                q = "".join(list(map(lambda x: self.conv(x), last_row[j-1:j+2])))
+                next_row.append(self.conv_binary(self.transition_rules[q]))
 
-            cell = next_row
-            it.append(cell)
+            # because the index for loop can't wrap around
+            q = last_row[-2:] + last_row[:1]
+            v = "".join(list(map(lambda x: self.conv(x), q)))
+            next_row.append(self.conv_binary(self.transition_rules[v]))
+            last_row = next_row
+            the_structure.append(last_row)
 
 
 def main():
